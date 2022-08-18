@@ -60,7 +60,8 @@ function onEditByTrigger(e) {
   var change_type = e.changeType;
   
   // range.setNote('Last modified: ' + new Date());
-  val_text = "JSON.stringify(e): " + JSON.stringify(e) + "; Active cells: " + range + "; Old: " + oldValue + "; New: " + currentValue;
+  val_text = "JSON.stringify(e): " + JSON.stringify(e);
+  //  + "; Active cells: " + range + "; Old: " + oldValue + "; New: " + currentValue;
   new_sheet.getRange("A45").setValue(val_text);
 
   var values_change = [
@@ -80,4 +81,14 @@ function onEditByTrigger(e) {
 function make_changed_val() {
   return "Old: " + oldValue + "; New: " + currentValue;
     // SpreadsheetApp.getActiveSheet().getRange('F2').setValue('Hello');
+}
+
+function logDataInEveryCell() {
+ var range = SpreadsheetApp.getActive().getRangeByName("SalesData");
+ var values = range.getValues();
+ values.forEach(function(row) {
+   row.forEach(function(col) {
+     Logger.log(col);
+   });
+ });
 }
