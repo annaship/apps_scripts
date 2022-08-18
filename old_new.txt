@@ -30,7 +30,7 @@ function init() {
 }
 
 function onEditByTrigger(e) {
-  var columnNumber = 1; // If you want to retrieve the old values when the column "A" is edited, it's 1.
+  // var columnNumber = 1; // If you want to retrieve the old values when the column "A" is edited, it's 1.
 
   var source = e.source;
   var range = e.range;
@@ -39,7 +39,7 @@ function onEditByTrigger(e) {
     dstid = init();
   }
 
-  if (e.range.columnStart == columnNumber) {
+  // if (e.range.columnStart == columnNumber) {
     var range = source.getSheetName() + "!" + range.getA1Notation();
 
     var fields = "sheets(data(rowData(values(formattedValue,userEnteredFormat,userEnteredValue))))";
@@ -48,7 +48,7 @@ function onEditByTrigger(e) {
 
     console.log("currentValue %s", currentValue);
     console.log("oldValue %s", oldValue);
-  }
+  // }
 
   // Update backup file
   var range = e.source.getDataRange().getA1Notation();
@@ -63,7 +63,8 @@ function onEditByTrigger(e) {
   ["Old: " + oldValue, "New: " + currentValue]
   ];
 
-  var rangeNew = new_sheet.getRange("A44:B44");
+  var rangeNew = range;
+  // new_sheet.getRange("A44:B44");
   rangeNew.setValues(values_change);
 
   //  make_changed_val
