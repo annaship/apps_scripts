@@ -31,7 +31,8 @@ function init() {
 
 function onEditByTrigger(e) {
   // var columnNumber = 1; // If you want to retrieve the old values when the column "A" is edited, it's 1.
-
+  var currentValue = "";
+  var oldValue = "";
   var source = e.source;
   var range = e.range;
   var dstid = PropertiesService.getScriptProperties().getProperty('backupfileid');
@@ -42,22 +43,26 @@ function onEditByTrigger(e) {
   // if (e.range.columnStart == columnNumber) {
     var range = source.getSheetName() + "!" + range.getA1Notation();
 
-    var fields = "sheets(data(rowData(values(formattedValue,userEnteredFormat,userEnteredValue))))";
-    var currentValue = source.getRange(range).getValues();
-    var oldValue = SpreadsheetApp.openById(dstid).getRange(range).getValues();
+    // var fields = "sheets(data(rowData(values(formattedValue,userEnteredFormat,userEnteredValue))))";
+    currentValue = currentValue + " # " + source.getRange(range).getValues();
+    oldValue = oldValue + " # " + SpreadsheetApp.openById(dstid).getRange(range).getValues();
 
     console.log("currentValue %s", currentValue);
     console.log("oldValue %s", oldValue);
+    // var cell_act  = Sheet.getActiveCell();
   // }
 
   // Update backup file
   var range = e.source.getDataRange().getA1Notation();
   var srcrange = e.source.getRange(range);
   var dstrange = SpreadsheetApp.openById(dstid).getSheets()[0].getRange(range);
+  var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
+  var change_type = e.changeType;
+  
+  // range.setNote('Last modified: ' + new Date());
+  val_text = "JSON.stringify(e): " + JSON.stringify(e) + "; Active cells: " + range + "; Old: " + oldValue + "; New: " + currentValue;
+  new_sheet.getRange("A45").setValue(val_text);
 
-  val_text = "Old: " + oldValue + "; New: " + currentValue;
-  new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
-   new_sheet.getRange("A45").setValue(val_text);
   var values_change = [
     // ["Old", "new"]
   ["Old: " + oldValue, "New: " + currentValue]
