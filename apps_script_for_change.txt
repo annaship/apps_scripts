@@ -1,0 +1,224 @@
+
+
+const SHORT_SHEET_NAME = "Краткая";
+const LONG_SHEET_NAME = "Полная";
+const OLD_DATE = new Date('2022-08-01T12:00:00');
+
+function doGet() {
+  // console.log(new Date('2022-08-01T00:00:00'))
+  var spr = SpreadsheetApp.getActiveSpreadsheet();
+  // var shortSheet = spr.getSheetByName(SHORT_SHEET_NAME);
+  // var shortData = shortSheet.getDataRange().getValues();
+  var longSheet = spr.getSheetByName(LONG_SHEET_NAME);
+  var longData = longSheet.getDataRange().getValues();
+
+  var data_new = {
+    version: 1,
+    updateDate: new Date(),
+    columnsToShow: [
+      "documents",
+      "statuses",
+      "payments",
+      "housing",
+      "medicine",
+      "transport",
+      "work",
+      "education",
+      "driver",
+      "pets",
+      "covid"
+    ],
+    dataLong: longData
+  }
+
+  var data_old = {
+    version: 1,
+    updateDate: OLD_DATE,
+    columnsToShow: [
+      "documents",
+      "statuses",
+      "payments",
+      "housing",
+      "medicine",
+      "transport",
+      "work",
+      "education",
+      "driver",
+      "pets",
+      "covid"
+    ],
+    dataLong: longData
+  }
+  
+}
+
+
+  // function onEdit(e) {
+  // let oldValue = e.oldValue;
+  // let newValue = e.value;
+  // console.log("The range's old value was: " + oldValue + ", and the updated value is: " + newValue);
+// }
+
+  // changed value
+function changed_value() {
+
+ let sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+
+ let mainCell = sheet.getActiveCell();
+ let mainCellRow = mainCell.getRow();
+ let mainCellCol = mainCell.getColumn();
+ let mainCellValue = mainCell.getValue();
+ console.log(mainCellValue)
+
+ let lastRow = sheet.getLastRow();
+
+ if (mainCellRow == 2 && mainCellCol == 1)
+ {
+    sheet.getRange(lastRow+1,2).setValue(mainCellValue)
+    
+ }
+ 
+  
+}
+
+
+
+/*const UPLOAD_URL = "https://964i8d60k8.execute-api.eu-west-3.amazonaws.com/Prod/api/S3Proxy/text/countries_data_3.json?apiKey=uovai9xeixeichooSeiyaish5yuapodaeXoejeexoh5xi";*/
+
+/* function publishData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  console.log(UPLOAD_URL);
+
+  var shortSheet = ss.getSheetByName(SHORT_SHEET_NAME);
+  var shortData = shortSheet.getDataRange().getValues();
+  var longSheet = ss.getSheetByName(LONG_SHEET_NAME);
+  var longData = longSheet.getDataRange().getValues();
+
+  var data = {
+    version: 1,
+    updateDate: new Date(),
+    columnsToShow: [
+      "documents",
+      "statuses",
+      "payments",
+      "housing",
+      "medicine",
+      "transport",
+      "work",
+      "education",
+      "driver",
+      "pets",
+      "covid"
+    ],
+    dataShort: shortData,
+    dataLong: longData
+  }
+
+  var payload = JSON.stringify(data);
+  var response = UrlFetchApp.fetch(UPLOAD_URL, {
+    'method' : 'PUT',
+    'contentType' : "application/json",
+    'payload' : payload
+  });
+}
+*/
+
+/* function onOpen() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  var entries = [
+    { name : "опубликовать", functionName : "publishData"},
+  ];
+  sheet.addMenu("Вареник", entries);
+};
+*/
+
+// function onChange() {
+  // var sheet = SpreadsheetApp.getActiveSpreadsheet();
+  // var entries = [
+    // { name : "опубликовать", functionName : "publishData"},
+  // ];
+  // sheet.addMenu("Вареник", entries);
+// };
+
+/**
+ * https://developers.google.com/drive/api/v2/reference/revisions/list#javascript
+ * Retrieve a list of revisions.
+ *
+ * @param {String} fileId ID of the file to retrieve revisions for.
+ * @param {Function} callback Function to call when the request is complete.
+ */
+function retrieveRevisions(fileId, callback) {
+  var request = gapi.client.drive.revisions.list({
+    'fileId': fileId
+  });
+  request.execute(callback);
+}
+
+function logRevisionMetadata() {
+  const fileId = '1478821481';
+  const output = [];
+  // Get revisions
+  // var revisions = Drive.Revisions.list(fileId, { 'maxResults': 1000 });
+  var revisions = drive.revisions.list({
+    'fileId': fileId
+  });
+  console.log("Found " + revisions.items.length + " revisions");
+  
+ revisions.items.forEach( revision => {
+      var date = new Date(revision.modifiedDate);
+      output.push([Utilities.formatDate(date,'GMT-5','yyyy-MM-dd HH:mm'), revision.lastModifyingUser.displayName]);
+    });
+  console.log(output)
+}
+
+function appendLine() {
+    var sessionEmail = Session.getActiveUser().getEmail().toString();
+    var spreadsheetTimeZone = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
+    var lastUpdatedString = Utilities.formatDate(new Date(), spreadsheetTimeZone, "MM/dd/yyyy' 'HH:mm:ss");
+
+    var s = SpreadsheetApp.getActiveSheet();
+
+    if (s.getName() == "Workload") { //checks that we're on the correct sheet
+        var r = s.getActiveCell();
+        if (r.getColumn() == 14) { //checks the column
+            var status = r.getValue();
+            var note = r.offset(0, -1);
+            var noteValue = note.getValue()
+            var delivery = r.offset(0, -5);
+            var deliveryValue = delivery.getValue().toString();
+        }
+
+        // Validating fields are filled in
+        if (status == "Complete") {
+            var ui = SpreadsheetApp.getUi();
+            if (noteValue == '') { // if no note is entered, stop script with message box
+                var noStatus = ui.alert(
+                    'Warning!',
+                    'Please enter notation before choosing Complete.',
+                    ui.ButtonSet.OK);
+                r.setValue('')
+                return;
+            }
+
+            // get array values
+            var array = [lastUpdatedString, sessionEmail, deliveryValue, noteValue]          
+
+            // insert at row 2 of destination, so newest note is always at the top and found in the index(match())   
+            var ss = SpreadsheetApp.getActiveSpreadsheet();
+            var pasteSheet = ss.getSheetByName("Historical Notes Sheet");
+            var lock = LockService.getScriptLock();
+            lock.waitLock(30000);
+            try {
+                var index = 2;
+                pasteSheet.insertRowBefore(index).getRange(index, 1, 1, array.length).setValues([array]);
+                SpreadsheetApp.flush();
+            } finally {
+                lock.releaseLock();
+            }
+
+            // clear response row
+            note.setValue('')
+            r.setValue('')
+        }
+    }
+}
