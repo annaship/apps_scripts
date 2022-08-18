@@ -1,0 +1,77 @@
+var backupfilename = "backupfile";
+
+function copyToo(srcrange, dstrange) {
+    var dstSS = dstrange.getSheet().getParent();
+    var copiedsheet = srcrange.getSheet().copyTo(dstSS);
+    copiedsheet.getRange(srcrange.getA1Notation()).copyTo(dstrange);
+    dstSS.deleteSheet(copiedsheet);
+}
+
+// This is run only one time.
+function init() {
+  // Source
+  var srcss = SpreadsheetApp.getActiveSheet();
+  var range = srcss.getDataRange().getA1Notation();
+  var srcrange = srcss.getRange(range);
+  var srcsheetname = srcss.getName();
+
+  // Destination
+  var backupfile = DriveApp.getFilesByName(backupfilename);
+  var dstid = backupfile.hasNext()
+    ? backupfile.next().getId()
+    : SpreadsheetApp.create(backupfilename).getId();
+  var dstss = SpreadsheetApp.openById(dstid).getSheets()[0]
+  var dstrange = dstss.getRange(range);
+  dstss.setName(srcsheetname);
+
+  copyToo(srcrange, dstrange);
+  PropertiesService.getScriptProperties().setProperty('backupfileid', dstid);
+  return dstid;
+}
+
+function onEditByTrigger(e) {
+  var columnNumber = 1; // If you want to retrieve the old values when the column "A" is edited, it's 1.
+
+  var source = e.source;
+  var range = e.range;
+  var dstid = PropertiesService.getScriptProperties().getProperty('backupfileid');
+  if (!dstid) {
+    dstid = init();
+  }
+
+  if (e.range.columnStart == columnNumber) {
+    var range = source.getSheetName() + "!" + range.getA1Notation();
+
+    var fields = "sheets(data(rowData(values(formattedValue,userEnteredFormat,userEnteredValue))))";
+    var currentValue = source.getRange(range).getValues();
+    var oldValue = SpreadsheetApp.openById(dstid).getRange(range).getValues();
+
+    console.log("currentValue %s", currentValue);
+    console.log("oldValue %s", oldValue);
+  }
+
+  // Update backup file
+  var range = e.source.getDataRange().getA1Notation();
+  var srcrange = e.source.getRange(range);
+  var dstrange = SpreadsheetApp.openById(dstid).getSheets()[0].getRange(range);
+
+  val_text = "Old: " + oldValue + "; New: " + currentValue;
+  new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
+   new_sheet.getRange("A45").setValue(val_text);
+  var values_change = [
+    // ["Old", "new"]
+  ["Old: " + oldValue, "New: " + currentValue]
+  ];
+
+  var rangeNew = new_sheet.getRange("A44:B44");
+  rangeNew.setValues(values_change);
+
+  //  make_changed_val
+  // copyToo(srcrange, dstrange);
+  
+}
+
+function make_changed_val() {
+  return "Old: " + oldValue + "; New: " + currentValue;
+    // SpreadsheetApp.getActiveSheet().getRange('F2').setValue('Hello');
+}
