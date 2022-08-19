@@ -42,6 +42,7 @@ function onEditByTrigger(e) {
 
   // if (e.range.columnStart == columnNumber) {
     var range = source.getSheetName() + "!" + range.getA1Notation();
+    // var values = range.getValues(); //TypeError: range.getValues is not a function	
 
     // var fields = "sheets(data(rowData(values(formattedValue,userEnteredFormat,userEnteredValue))))";
     currentValue = currentValue + " # " + source.getRange(range).getValues();
@@ -49,7 +50,7 @@ function onEditByTrigger(e) {
 
     console.log("currentValue %s", currentValue);
     console.log("oldValue %s", oldValue);
-    // var cell_act  = Sheet.getActiveCell();
+    // var cell_act  = Sheet.getActiveCell(); // ReferenceError: sheet is not defined	
   // }
 
   // Update backup file
@@ -57,9 +58,13 @@ function onEditByTrigger(e) {
   var srcrange = e.source.getRange(range);
   var dstrange = SpreadsheetApp.openById(dstid).getSheets()[0].getRange(range);
   var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
+  parseValues(values, new_sheet);
+
+
+/*
   var change_type = e.changeType;
   
-  // range.setNote('Last modified: ' + new Date());
+  // range.setNote('Last modified: ' + new Date()); //TypeError: range.setNote is not a function	
   val_text = "JSON.stringify(e): " + JSON.stringify(e);
   //  + "; Active cells: " + range + "; Old: " + oldValue + "; New: " + currentValue;
   new_sheet.getRange("A45").setValue(val_text);
@@ -71,12 +76,30 @@ function onEditByTrigger(e) {
 
   var rangeNew = range;
   // new_sheet.getRange("A44:B44");
-  rangeNew.setValues(values_change);
-
+  // rangeNew.setValues(values_change); // TypeError: rangeNew.setValues is not a function	//TypeError: SpreadsheetApp.openById(...).getSheets(...)[0].setValue is not a function	
+*/
   //  make_changed_val
   // copyToo(srcrange, dstrange);
   
 }
+
+// https://stackoverflow.com/questions/64730328/google-sheets-custom-script-iterate-through-a-range-and-print-values-in-a-determ
+function parseValues(values, new_sheet) {
+  for (var i in values) {
+    var row = values[i];
+    var column = 1;
+    for (var j in row) {
+      var value = row[j];
+      // if (newValue !== oldValue) {
+        // new_sheet.getRange(parseInt(i) + 1, column).setValue(i + column + " new:" + value);
+        val_text = i + "_" + column + " new:" + value[0];
+        // new_sheet.getRange("A45").setValue(val_text); // Exception: The number of rows in the data does not match the number of rows in the range. The data has 1 but the range has 43.	
+        column++;
+      // }
+    }
+  }
+}
+
 
 function make_changed_val() {
   return "Old: " + oldValue + "; New: " + currentValue;
@@ -85,7 +108,7 @@ function make_changed_val() {
 
 function logDataInEveryCell() {
  var range = SpreadsheetApp.getActive().getRangeByName("SalesData");
- var values = range.getValues();
+//  var values = range.getValues(); //TypeError: range.getValues is not a function	
  values.forEach(function(row) {
    row.forEach(function(col) {
      Logger.log(col);
