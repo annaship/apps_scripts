@@ -1,4 +1,11 @@
 /**
+ * https://support.google.com/docs/thread/53971944?msgid=54186913
+ * The Tracker sheet uses this formula:
+ 
+=query('Change log'!A1:E, "select toDate(A), count(A) where A is not null group by toDate(A) label toDate(A) 'Date', count(A) 'Number of edits' ", 1)
+ 
+ * 
+ * 
 * Automatically logs changes to a range.
 *
 * To take this script into use:
@@ -39,6 +46,32 @@ function onEdit(e) {
 }
 
 /**
+ * create a log spreadshet once
+ * 
+ */
+    ////////////////////////////////
+    // [START modifiable parameters]
+    // const rangesToWatch = [ss.getRange('Sheet1!B2:G')];
+    const rangesToWatch = [ss.getRange('Полная!A43:P')];
+    const backupfilename = "change_log_file";
+    const logSheetName = 'Change log';
+    // [END modifiable parameters]
+    ////////////////////////////////
+
+function init() {
+  // Destination
+  var backupfile = DriveApp.getFilesByName(backupfilename);
+  var dstid = backupfile.hasNext()
+    ? backupfile.next().getId()
+    : SpreadsheetApp.create(backupfilename).getId();
+  var dstss = SpreadsheetApp.openById(dstid).getSheets()[0]
+  // var dstrange = dstss.getRange(range);
+  dstss.setName(logSheetName);
+  PropertiesService.getScriptProperties().setProperty('backupfileid', dstid);
+  return dstid;
+}
+
+/**
 * Logs changes to a range.
 *
 * @param {Object} e The onEdit() event object.
@@ -49,13 +82,6 @@ function logChanges_(e) {
   //  - see https://support.google.com/docs/thread/53971944?msgid=54171232
   var ss = e.source;
   try {
-    ////////////////////////////////
-    // [START modifiable parameters]
-    // const rangesToWatch = [ss.getRange('Sheet1!B2:G')];
-    const rangesToWatch = [ss.getRange('Полная!A43:P')];
-    const logSheetName = 'Change log';
-    // [END modifiable parameters]
-    ////////////////////////////////
     let intersect = null;
     for (let r = 0, numRanges = rangesToWatch.length; r < numRanges; r++) {
       intersect = getRangeIntersection_(rangesToWatch[r], e.range);
@@ -66,12 +92,13 @@ function logChanges_(e) {
     if (!intersect) {
       return;
     }
-    let logSheet = ss.getSheetByName(logSheetName);
+    let logSheet = get_log_sheet();
+    /* ss.getSheetByName(logSheetName);
     if (!logSheet) {
       logSheet = ss.insertSheet(logSheetName);
       logSheet.appendRow(['Timestamp', 'Row label', 'Column label', 'New value', 'Old value']);
       logSheet.setFrozenRows(1);
-    }
+    }*/
     const timestamp = new Date();
     const rowLabels = intersect.sheet.getRange(1, intersect.sheet.getFrozenColumns() || 1, intersect.sheet.getLastRow(), 1).getDisplayValues().flat();
     const columnLabels = intersect.sheet.getRange(intersect.sheet.getFrozenRows() || 1, 1, 1, intersect.sheet.getLastColumn()).getDisplayValues().flat();
@@ -165,13 +192,17 @@ function showMessage_(message, timeoutSeconds) {
   //  - initial version
   SpreadsheetApp.getActive().toast(message, 'Log changes', timeoutSeconds || 5);
 }
- 
+
+/**
+ * Creates or finds a log sheet
+ */
 function get_log_sheet() {
-  var dstid = PropertiesService.getScriptProperties().getProperty(backupfilename);
+  var dstid = PropertiesService.getScriptProperties().getProperty('backupfilename');
   if (!dstid) {
     dstid = init();
   }
   var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
+  var logSheetName = PropertiesService.getScriptProperties().getProperty('logSheetName');
   let logSheet = new_sheet.getSheetByName(logSheetName);
   if (!logSheet) {
     logSheet = new_sheet.insertSheet(logSheetName);
