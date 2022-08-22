@@ -58,7 +58,7 @@ function logChanges_(e) {
   try {
     ////////////////////////////////
     // [START modifiable parameters]
-    const rangesToWatch = [ss.getRange('Полная!A1:P')];
+    const rangesToWatch = [ss.getRange('Полная!A1:R')];
     // [END modifiable parameters]
     ////////////////////////////////
     let intersect = null;
