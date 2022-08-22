@@ -32,38 +32,28 @@ function init() {
 function onEditByTrigger(e) {
   
   // var columnNumber = 1; // If you want to retrieve the old values when the column "A" is edited, it's 1.
-  var currentValue = "";
-  var oldValue = "";
   var source = e.source;
   var range = e.range;
   var dstid = PropertiesService.getScriptProperties().getProperty('backupfileid');
   if (!dstid) {
     dstid = init();
   }
+  var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
+  // var dstrange = new_sheet.getRange(range);
 
-  // if (e.range.columnStart == columnNumber) {
-    var range = source.getSheetName() + "!" + range.getA1Notation();
-    // var values = range.getValues(); //TypeError: range.getValues is not a function	
-
-    // var fields = "sheets(data(rowData(values(formattedValue,userEnteredFormat,userEnteredValue))))";
-    currentValue = currentValue + " # " + source.getRange(range).getValues();
-    oldValue = oldValue + " # " + SpreadsheetApp.openById(dstid).getRange(range).getValues();
-
-    console.log("currentValue %s", currentValue);
-    console.log("oldValue %s", oldValue);
-    // var cell_act  = Sheet.getActiveCell(); // ReferenceError: sheet is not defined	
-  // }
+  if(e.oldValue) {
+    // e.range.offset(0,1).setValue(e.oldValue)
+    // Update backup file
+    new_sheet.getRange("A46").setValue(e.oldValue);
+    new_sheet.getRange("A47").setValue(e.value);
+    new_sheet.getRange("A48").setValue("change_type = " + e.changeType);
+  };
 
   // Update backup file
-  var range = e.source.getDataRange().getA1Notation();
-  var srcrange = e.source.getRange(range);
-  var dstrange = SpreadsheetApp.openById(dstid).getSheets()[0].getRange(range);
-  var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
+  // var range = e.source.getDataRange().getA1Notation();
+  // var srcrange = e.source.getRange(range);
   // parseValues(values, new_sheet);
-
-
-
-  var change_type = e.changeType;
+/*
   
   // range.setNote('Last modified: ' + new Date()); //TypeError: range.setNote is not a function	
   val_text = "JSON.stringify(e): " + JSON.stringify(e);
@@ -86,7 +76,7 @@ function onEditByTrigger(e) {
 
   //  make_changed_val
   // copyToo(srcrange, dstrange);
-  
+  */
 }
 
 // https://stackoverflow.com/questions/64730328/google-sheets-custom-script-iterate-through-a-range-and-print-values-in-a-determ
