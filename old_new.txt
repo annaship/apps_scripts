@@ -30,6 +30,7 @@ function init() {
 }
 
 function onEditByTrigger(e) {
+  
   // var columnNumber = 1; // If you want to retrieve the old values when the column "A" is edited, it's 1.
   var currentValue = "";
   var oldValue = "";
@@ -58,16 +59,21 @@ function onEditByTrigger(e) {
   var srcrange = e.source.getRange(range);
   var dstrange = SpreadsheetApp.openById(dstid).getSheets()[0].getRange(range);
   var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
-  parseValues(values, new_sheet);
+  // parseValues(values, new_sheet);
 
 
-/*
+
   var change_type = e.changeType;
   
   // range.setNote('Last modified: ' + new Date()); //TypeError: range.setNote is not a function	
   val_text = "JSON.stringify(e): " + JSON.stringify(e);
   //  + "; Active cells: " + range + "; Old: " + oldValue + "; New: " + currentValue;
   new_sheet.getRange("A45").setValue(val_text);
+  if(e.oldValue) {
+    e.range.offset(0,1).setValue(e.oldValue)
+    new_sheet.getRange("A46").setValue(e.oldValue);
+    new_sheet.getRange("A47").setValue(e.value);
+    };
 
   var values_change = [
     // ["Old", "new"]
@@ -77,7 +83,7 @@ function onEditByTrigger(e) {
   var rangeNew = range;
   // new_sheet.getRange("A44:B44");
   // rangeNew.setValues(values_change); // TypeError: rangeNew.setValues is not a function	//TypeError: SpreadsheetApp.openById(...).getSheets(...)[0].setValue is not a function	
-*/
+
   //  make_changed_val
   // copyToo(srcrange, dstrange);
   
@@ -115,10 +121,40 @@ function make_changed_val() {
  *
  * See https://developers.google.com/apps-script/guides/triggers/events#google_sheets_events
  */
+// function test_emailChange() {
+//   var dataRange = SpreadsheetApp.getActiveSheet().getDataRange();
+//   var data = dataRange.getValues();
+//   var headers = data[0];
+//   // Start at row 1, skipping headers in row 0
+//   for (var row=42; row < data.length; row++) {
+//     var e = {};
+//     e.values = data[row].filter(Boolean);  // filter: https://stackoverflow.com/a/19888749
+//     e.range = dataRange.offset(row,0,1,data[0].length);
+//     e.namedValues = {};
+//     // Loop through headers to create namedValues object
+//     // NOTE: all namedValues are arrays.
+//     for (var col=0; col < headers.length; col++) {
+//       e.namedValues[headers[col]] = [data[row][col]];
+//     }
+//     // Pass the simulated event to emailChange
+//     emailChange(e);
+//   } // for by rows
+// }
+
+
 function test_emailChange() {
   var dataRange = SpreadsheetApp.getActiveSheet().getDataRange();
   var data = dataRange.getValues();
   var headers = data[0];
+
+/*
+  for (var row=42; row < data.length; row++) {
+    for (var col=0; col < headers.length; col++) {
+            
+    }
+  }
+  */
+  
   // Start at row 1, skipping headers in row 0
   for (var row=42; row < data.length; row++) {
     var e = {};
@@ -136,20 +172,8 @@ function test_emailChange() {
 }
 
 function emailChange(e) {
+  
   Logger.log( JSON.stringify( e , null, 2 ) ); // prints line by line
 
 }
 
-function logRevisionMetadata() {
-  const fileId = '1478821481';
-  const output = [];
-  // Get revisions
-  var revisions = Drive.Revisions.list(fileId, { 'maxResults': 1000 });
-  console.log("Found " + revisions.items.length + " revisions");
-  
- revisions.items.forEach( revision => {
-      var date = new Date(revision.modifiedDate);
-      output.push([Utilities.formatDate(date,'GMT-5','yyyy-MM-dd HH:mm'), revision.lastModifyingUser.displayName]);
-    });
-  console.log(output)
-}
