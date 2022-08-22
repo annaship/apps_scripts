@@ -1,3 +1,4 @@
+
 var backupfilename = "backupfile";
 
 function copyToo(srcrange, dstrange) {
@@ -44,9 +45,12 @@ function onEditByTrigger(e) {
   if(e.oldValue) {
     // e.range.offset(0,1).setValue(e.oldValue)
     // Update backup file
-    new_sheet.getRange("A46").setValue(e.oldValue);
-    new_sheet.getRange("A47").setValue(e.value);
-    new_sheet.getRange("A48").setValue("change_type = " + e.changeType);
+    new_sheet.getRange("A48").setValue("old:" + e.oldValue);
+    new_sheet.getRange("A49").setValue("new: " + e.value);
+    new_sheet.range = e.range
+    new_sheet.getRange(range).offset(1,1).setValue(
+      "CHANGE"
+    );
   };
 
   // Update backup file
@@ -123,7 +127,7 @@ function make_changed_val() {
 //     e.namedValues = {};
 //     // Loop through headers to create namedValues object
 //     // NOTE: all namedValues are arrays.
-//     for (var col=0; col < headers.length; col++) {
+//     for (var col=0; col<headers.length; col++) {
 //       e.namedValues[headers[col]] = [data[row][col]];
 //     }
 //     // Pass the simulated event to emailChange
@@ -153,7 +157,7 @@ function test_emailChange() {
     e.namedValues = {};
     // Loop through headers to create namedValues object
     // NOTE: all namedValues are arrays.
-    for (var col=0; col < headers.length; col++) {
+    for (var col=0; col<headers.length; col++) {
       e.namedValues[headers[col]] = [data[row][col]];
     }
     // Pass the simulated event to emailChange
