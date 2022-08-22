@@ -1,6 +1,6 @@
 /**
  * https://support.google.com/docs/thread/53971944?msgid=54186913
- * Moodified by A Shipunova Aug 22 2022
+ * Modified by A. Shipunova Aug 22 2022
  * Needs an onEdit trigger to be able to write in another spreadsheet
  * For report use this formula:
  
@@ -58,9 +58,7 @@ function logChanges_(e) {
   try {
     ////////////////////////////////
     // [START modifiable parameters]
-    // const rangesToWatch = [ss.getRange('Sheet1!B2:G')];
-    const rangesToWatch = [ss.getRange('Полная!A43:P')];
-    // const logSheetName = 'Change log';
+    const rangesToWatch = [ss.getRange('Полная!A1:P')];
     // [END modifiable parameters]
     ////////////////////////////////
     let intersect = null;
@@ -74,14 +72,6 @@ function logChanges_(e) {
       return;
     }
     let logSheet = get_log_sheet();
-    /*
-    ss.getSheetByName(logSheetName);
-    if (!logSheet) {
-      logSheet = ss.insertSheet(logSheetName);
-      logSheet.appendRow(['Timestamp', 'Row label', 'Column label', 'New value', 'Old value']);
-      logSheet.setFrozenRows(1);
-    }
-    */
     const timestamp = new Date();
     const rowLabels = intersect.sheet.getRange(1, intersect.sheet.getFrozenColumns() || 1, intersect.sheet.getLastRow(), 1).getDisplayValues().flat();
     const columnLabels = intersect.sheet.getRange(intersect.sheet.getFrozenRows() || 1, 1, 1, intersect.sheet.getLastColumn()).getDisplayValues().flat();
@@ -177,16 +167,14 @@ function showMessage_(message, timeoutSeconds) {
 }
 
 /**
- * Creates or finds a log sheet
- * wroks, creates a sheet if none
+ * Creates or finds a log sheet;
+ * works, creates a sheet if none
  */
 function get_log_sheet() {
     ////////////////////////////////
     // [START modifiable parameters]
     const logFileName = "change_log_file";
     const logSheetName = 'Change log';
-    // const dstid = "1bDJkz0bPgXMwMOi97s0WEpbrF4FR_QxVYnAOnJRz-sc" 
-    // (hardcoded from change_log_file https://docs.google.com/spreadsheets/d/1bDJkz0bPgXMwMOi97s0WEpbrF4FR_QxVYnAOnJRz-sc/edit#gid=1495612920
     // [END modifiable parameters]
     ////////////////////////////////
     var logFile = DriveApp.getFilesByName(logFileName);
@@ -194,17 +182,7 @@ function get_log_sheet() {
     ? logFile.next().getId()
     : SpreadsheetApp.create(logFileName).getId();
   
-  // DriveApp.getFilesByName(logFileName);
-  // while (fileList.hasNext()) {
-  //   Logger.log(fileList.next().getId());
-  // }
-  // PropertiesService.getScriptProperties().getProperty('logFileName');
-  // if (!dstid) {
-    // dstid = init(logFileName, logSheetName);
-  // }
   var new_sheet = SpreadsheetApp.openById(dstid);
-  // .getSheets()[0];
-  // var logSheetName = PropertiesService.getScriptProperties().getProperty('logSheetName');
   let logSheet = new_sheet.getSheetByName(logSheetName);
   if (!logSheet) {
     logSheet = new_sheet.insertSheet(logSheetName);
