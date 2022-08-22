@@ -166,3 +166,16 @@ function showMessage_(message, timeoutSeconds) {
   SpreadsheetApp.getActive().toast(message, 'Log changes', timeoutSeconds || 5);
 }
  
+function get_log_sheet() {
+  var dstid = PropertiesService.getScriptProperties().getProperty(backupfilename);
+  if (!dstid) {
+    dstid = init();
+  }
+  var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
+  let logSheet = new_sheet.getSheetByName(logSheetName);
+  if (!logSheet) {
+    logSheet = new_sheet.insertSheet(logSheetName);
+    logSheet.appendRow(['Timestamp', 'Row label', 'Column label', 'New value', 'Old value']);
+    logSheet.setFrozenRows(1);
+  }
+}
