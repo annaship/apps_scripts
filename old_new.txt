@@ -139,3 +139,17 @@ function emailChange(e) {
   Logger.log( JSON.stringify( e , null, 2 ) ); // prints line by line
 
 }
+
+function logRevisionMetadata() {
+  const fileId = '1478821481';
+  const output = [];
+  // Get revisions
+  var revisions = Drive.Revisions.list(fileId, { 'maxResults': 1000 });
+  console.log("Found " + revisions.items.length + " revisions");
+  
+ revisions.items.forEach( revision => {
+      var date = new Date(revision.modifiedDate);
+      output.push([Utilities.formatDate(date,'GMT-5','yyyy-MM-dd HH:mm'), revision.lastModifyingUser.displayName]);
+    });
+  console.log(output)
+}
