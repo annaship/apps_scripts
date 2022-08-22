@@ -38,7 +38,7 @@
 *
 * @param {Object} e The onEdit() event object.
 */
-function myOnEdit(e) {
+function logOnEdit(e) {
   if (!e) {
     throw new Error('Please do not run the script in the script editor window. It runs automatically when you edit the spreadsheet.');
   }
