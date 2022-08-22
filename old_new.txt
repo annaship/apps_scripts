@@ -106,12 +106,36 @@ function make_changed_val() {
     // SpreadsheetApp.getActiveSheet().getRange('F2').setValue('Hello');
 }
 
-function logDataInEveryCell() {
- var range = SpreadsheetApp.getActive().getRangeByName("SalesData");
-//  var values = range.getValues(); //TypeError: range.getValues is not a function	
- values.forEach(function(row) {
-   row.forEach(function(col) {
-     Logger.log(col);
-   });
- });
+/**
+ * https://stackoverflow.com/questions/16089041/how-can-i-test-a-trigger-function-in-gas
+ * Test function for Spreadsheet Form Submit trigger functions.
+ * Loops through content of sheet, creating simulated Form Submit Events.
+ *
+ * Check for updates: https://stackoverflow.com/a/16089067/1677912
+ *
+ * See https://developers.google.com/apps-script/guides/triggers/events#google_sheets_events
+ */
+function test_emailChange() {
+  var dataRange = SpreadsheetApp.getActiveSheet().getDataRange();
+  var data = dataRange.getValues();
+  var headers = data[0];
+  // Start at row 1, skipping headers in row 0
+  for (var row=42; row < data.length; row++) {
+    var e = {};
+    e.values = data[row].filter(Boolean);  // filter: https://stackoverflow.com/a/19888749
+    e.range = dataRange.offset(row,0,1,data[0].length);
+    e.namedValues = {};
+    // Loop through headers to create namedValues object
+    // NOTE: all namedValues are arrays.
+    for (var col=0; col < headers.length; col++) {
+      e.namedValues[headers[col]] = [data[row][col]];
+    }
+    // Pass the simulated event to emailChange
+    emailChange(e);
+  } // for by rows
+}
+
+function emailChange(e) {
+  Logger.log( JSON.stringify( e , null, 2 ) ); // prints line by line
+
 }
