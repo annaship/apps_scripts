@@ -1,11 +1,11 @@
 /**
  * https://support.google.com/docs/thread/53971944?msgid=54186913
- * The Tracker sheet uses this formula:
+ * Moodified by A Shipunova Aug 22 2022
+ * Needs an onEdit trigger to be able to write in another spreadsheet
+ * For report use this formula:
  
 =query('Change log'!A1:E, "select toDate(A), count(A) where A is not null group by toDate(A) label toDate(A) 'Date', count(A) 'Number of edits' ", 1)
  
- * 
- * 
 * Automatically logs changes to a range.
 *
 * To take this script into use:
@@ -38,37 +38,11 @@
 *
 * @param {Object} e The onEdit() event object.
 */
-function onEdit(e) {
+function myOnEdit(e) {
   if (!e) {
     throw new Error('Please do not run the script in the script editor window. It runs automatically when you edit the spreadsheet.');
   }
   logChanges_(e);
-}
-
-/**
- * create a log spreadshet once
- * 
- */
-    ////////////////////////////////
-    // [START modifiable parameters]
-    // const rangesToWatch = [ss.getRange('Sheet1!B2:G')];
-    const rangesToWatch = [ss.getRange('Полная!A43:P')];
-    const backupfilename = "change_log_file";
-    const logSheetName = 'Change log';
-    // [END modifiable parameters]
-    ////////////////////////////////
-
-function init() {
-  // Destination
-  var backupfile = DriveApp.getFilesByName(backupfilename);
-  var dstid = backupfile.hasNext()
-    ? backupfile.next().getId()
-    : SpreadsheetApp.create(backupfilename).getId();
-  var dstss = SpreadsheetApp.openById(dstid).getSheets()[0]
-  // var dstrange = dstss.getRange(range);
-  dstss.setName(logSheetName);
-  PropertiesService.getScriptProperties().setProperty('backupfileid', dstid);
-  return dstid;
 }
 
 /**
@@ -82,6 +56,13 @@ function logChanges_(e) {
   //  - see https://support.google.com/docs/thread/53971944?msgid=54171232
   var ss = e.source;
   try {
+    ////////////////////////////////
+    // [START modifiable parameters]
+    // const rangesToWatch = [ss.getRange('Sheet1!B2:G')];
+    const rangesToWatch = [ss.getRange('Полная!A43:P')];
+    // const logSheetName = 'Change log';
+    // [END modifiable parameters]
+    ////////////////////////////////
     let intersect = null;
     for (let r = 0, numRanges = rangesToWatch.length; r < numRanges; r++) {
       intersect = getRangeIntersection_(rangesToWatch[r], e.range);
@@ -93,12 +74,14 @@ function logChanges_(e) {
       return;
     }
     let logSheet = get_log_sheet();
-    /* ss.getSheetByName(logSheetName);
+    /*
+    ss.getSheetByName(logSheetName);
     if (!logSheet) {
       logSheet = ss.insertSheet(logSheetName);
       logSheet.appendRow(['Timestamp', 'Row label', 'Column label', 'New value', 'Old value']);
       logSheet.setFrozenRows(1);
-    }*/
+    }
+    */
     const timestamp = new Date();
     const rowLabels = intersect.sheet.getRange(1, intersect.sheet.getFrozenColumns() || 1, intersect.sheet.getLastRow(), 1).getDisplayValues().flat();
     const columnLabels = intersect.sheet.getRange(intersect.sheet.getFrozenRows() || 1, 1, 1, intersect.sheet.getLastColumn()).getDisplayValues().flat();
@@ -111,7 +94,7 @@ function logChanges_(e) {
         const columnLabel = columnLabels[columnIndex] || 'column ' + columnIndex;
         const newValue = displayValues[row][column];
         const oldValue = e.oldValue === undefined ? '(unavailable)' : String(e.oldValue);
-        logSheet.appendRow([timestamp, rowLabel, columnLabel, newValue, oldValue]);
+        logSheet.appendRow([timestamp, rowLabel, columnLabel, oldValue, newValue]);
       }
     }
   } catch (error) {
@@ -195,18 +178,39 @@ function showMessage_(message, timeoutSeconds) {
 
 /**
  * Creates or finds a log sheet
+ * wroks, creates a sheet if none
  */
 function get_log_sheet() {
-  var dstid = PropertiesService.getScriptProperties().getProperty('backupfilename');
-  if (!dstid) {
-    dstid = init();
-  }
-  var new_sheet = SpreadsheetApp.openById(dstid).getSheets()[0];
-  var logSheetName = PropertiesService.getScriptProperties().getProperty('logSheetName');
+    ////////////////////////////////
+    // [START modifiable parameters]
+    const logFileName = "change_log_file";
+    const logSheetName = 'Change log';
+    // const dstid = "1bDJkz0bPgXMwMOi97s0WEpbrF4FR_QxVYnAOnJRz-sc" 
+    // (hardcoded from change_log_file https://docs.google.com/spreadsheets/d/1bDJkz0bPgXMwMOi97s0WEpbrF4FR_QxVYnAOnJRz-sc/edit#gid=1495612920
+    // [END modifiable parameters]
+    ////////////////////////////////
+    var logFile = DriveApp.getFilesByName(logFileName);
+    var dstid = logFile.hasNext()
+    ? logFile.next().getId()
+    : SpreadsheetApp.create(logFileName).getId();
+  
+  // DriveApp.getFilesByName(logFileName);
+  // while (fileList.hasNext()) {
+  //   Logger.log(fileList.next().getId());
+  // }
+  // PropertiesService.getScriptProperties().getProperty('logFileName');
+  // if (!dstid) {
+    // dstid = init(logFileName, logSheetName);
+  // }
+  var new_sheet = SpreadsheetApp.openById(dstid);
+  // .getSheets()[0];
+  // var logSheetName = PropertiesService.getScriptProperties().getProperty('logSheetName');
   let logSheet = new_sheet.getSheetByName(logSheetName);
   if (!logSheet) {
     logSheet = new_sheet.insertSheet(logSheetName);
-    logSheet.appendRow(['Timestamp', 'Row label', 'Column label', 'New value', 'Old value']);
+    logSheet.appendRow(['Timestamp', 'Row label', 'Column label', 'Old value', 'New value']);
     logSheet.setFrozenRows(1);
   }
+  return logSheet;
 }
+
