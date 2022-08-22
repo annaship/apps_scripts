@@ -157,7 +157,7 @@ function test_emailChange() {
     e.namedValues = {};
     // Loop through headers to create namedValues object
     // NOTE: all namedValues are arrays.
-    for (var col=0; col<headers.length; col++) {
+    for (var col=0; col < headers.length; col++) {
       e.namedValues[headers[col]] = [data[row][col]];
     }
     // Pass the simulated event to emailChange
