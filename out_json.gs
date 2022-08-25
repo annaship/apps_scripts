@@ -40,11 +40,15 @@ function publishData() {
 }
 
 function saveAsJSON() {
-  var blob,file,fileSets,obj;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  // console.log(UPLOAD_URL);
+
+  var shortSheet = ss.getSheetByName(SHORT_SHEET_NAME);
+  var shortData = shortSheet.getDataRange().getValues();
   
-  obj = {//Object literal for testing purposes
-    key:"value"
-  }
+  // var obj = {//Object literal for testing purposes
+    // key:"value"
+  // }
 
 /**
  * Creates a file in the users Google Drive
@@ -52,7 +56,7 @@ function saveAsJSON() {
   
   var folder = DriveApp.getFoldersByName('Rubikus').next();
   var filename = 'MyVarenik.json';
-  var files = DriveApp.getFilesByName(filename);
+  // var files = DriveApp.getFilesByName(filename);
 
   var fileSets = {
     title: filename,
@@ -64,8 +68,9 @@ function saveAsJSON() {
       }
     ]
   };
+  var short_output = JSON.stringify(shortData);
 
-  var blob = Utilities.newBlob(JSON.stringify(obj), "application/vnd.google-apps.script+json");
+  var blob = Utilities.newBlob(short_output, "application/vnd.google-apps.script+json");
   var file = Drive.Files.insert(fileSets, blob);
   Logger.log('ID: %s, File size (bytes): %s, type: %s', file.id, file.fileSize, file.mimeType);
 
