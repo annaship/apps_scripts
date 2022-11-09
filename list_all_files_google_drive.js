@@ -1,12 +1,13 @@
 //From https://stackoverflow.com/questions/67930017/get-folders-and-files-listed-in-google-sheets-from-a-google-drive-folder-using-a
 
 function listFilesAndFolders() {
-  var folderid = '18akqHAN7PSPMnG3h5HpCskQsMCv4TqCM'; // change FolderID
+  var folderId = '1ScRQhW7Thua8udEgMxRvdhdbesJl_OUZ';
   var sh = SpreadsheetApp.getActiveSheet();
   sh.clear();
+  // sheet.appendRow(["Full Path", "Name", "Date", "URL", "Last Updated", "Description", "Size"]);
   sh.appendRow(["parent", "folder", "name", "update", "size", "URL", "ID", "description", "type"]);
   try {
-    var parentFolder = DriveApp.getFolderById(folderid);
+    var parentFolder = DriveApp.getFolderById(folderId);
     listFiles(parentFolder, parentFolder.getName())
     listSubFolders(parentFolder, parentFolder.getName());
   } catch (e) {
